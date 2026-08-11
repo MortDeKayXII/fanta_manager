@@ -95,6 +95,12 @@ interface SessionActions {
 
   assignSlot: (args: { strategyId: string; slotId: string; playerId: string }) => void
   clearSlot: (args: { strategyId: string; slotId: string }) => void
+  assignSimulationSlot: (args: { strategyId: string; slotId: string; playerId: string }) => void
+  clearSimulationSlot: (args: { strategyId: string; slotId: string }) => void
+  setSimulationStrategy: (strategyId: string | undefined) => void
+  assignSimulationFormationPosition: (args: { moduleId: string; positionId: string; playerId: string }) => void
+  clearSimulationFormationPosition: (args: { moduleId: string; positionId: string }) => void
+  setSimulationModule: (moduleId: string | undefined) => void
 
   updateSettings: (patch: Partial<Settings>) => void
   setBuckets: (buckets: RoleBucket[]) => void
@@ -327,6 +333,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
       assignSlot: act(actions.assignSlot),
       clearSlot: act(actions.clearSlot),
+      assignSimulationSlot: act(actions.assignSimulationSlot),
+      clearSimulationSlot: act(actions.clearSimulationSlot),
+      setSimulationStrategy: act(actions.setSimulationStrategy),
+      assignSimulationFormationPosition: act(actions.assignSimulationFormationPosition),
+      clearSimulationFormationPosition: act(actions.clearSimulationFormationPosition),
+      setSimulationModule: act(actions.setSimulationModule),
 
       updateSettings: act(actions.updateSettings),
       setBuckets: act(actions.setBuckets),

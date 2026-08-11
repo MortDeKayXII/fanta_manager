@@ -161,6 +161,9 @@ export interface Strategy {
  */
 export type SlotAssignments = Record<string, Record<string, string>>
 
+export type SimulationState = Record<string, Record<string, string>>
+export type SimulationFormationState = Record<string, Record<string, string>>
+
 // --- Settings --------------------------------------------------------------
 
 export interface FlagThresholds {
@@ -203,6 +206,10 @@ export interface DraftSession {
   /** Currently selected strategy on the live-draft board. */
   active_strategy_id?: string
   slot_assignments: SlotAssignments
+  simulation_state: SimulationState
+  simulation_module_id?: string
+  simulation_formation_state: SimulationFormationState
+  simulation_strategy_id?: string
   log: DraftLogEntry[]
 }
 

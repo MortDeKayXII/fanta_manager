@@ -41,8 +41,23 @@ const ACTIVE_KEY = 'active_session_id'
  * threading an `undefined` check through each call site.
  */
 function normalizeSession(session: DraftSession): DraftSession {
-  if (session.settings.tiers) return session
-  return { ...session, settings: { ...session.settings, tiers: defaultTiers() } }
+  let normalized = session
+  if (!normalized.settings.tiers) {
+    normalized = {
+      ...normalized,
+      settings: { ...normalized.settings, tiers: defaultTiers() },
+    }
+  }
+
+  if (!normalized.simulation_state) {
+    normalized = { ...normalized, simulation_state: {} }
+  }
+
+  if (!normalized.simulation_formation_state) {
+    normalized = { ...normalized, simulation_formation_state: {} }
+  }
+
+  return normalized
 }
 
 export async function listSessions(): Promise<DraftSession[]> {

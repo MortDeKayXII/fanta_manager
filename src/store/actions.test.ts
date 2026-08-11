@@ -55,6 +55,9 @@ function base(): DraftSession {
       },
     ],
     active_strategy_id: 'st1',
+    simulation_state: {},
+    simulation_module_id: '4-4-2',
+    simulation_formation_state: {},
     slot_assignments: {},
     log: [],
   }

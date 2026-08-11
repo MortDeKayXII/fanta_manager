@@ -312,6 +312,10 @@ export const DEMO_SESSION: DraftSession = {
   players: DEMO_PLAYERS,
   strategies: DEMO_STRATEGIES,
   active_strategy_id: 's1',
+  simulation_state: {},
+  simulation_module_id: '4-4-2',
+  simulation_formation_state: {},
+  simulation_strategy_id: 's1',
   slot_assignments: DEMO_SLOT_ASSIGNMENTS,
   log: buildLog(DEMO_PLAYERS),
 }

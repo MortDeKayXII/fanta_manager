@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import clsx from 'clsx'
 import {
+  Activity,
   BarChart3,
   ClipboardList,
   Gavel,
@@ -16,6 +17,7 @@ const NAV = [
   { to: '/setup', label: 'Setup', icon: Upload },
   { to: '/prep', label: 'Prep', icon: ClipboardList },
   { to: '/strategy', label: 'Strategie', icon: LayoutGrid },
+  { to: '/simulate', label: 'Simulazione', icon: Activity },
   { to: '/live', label: 'Asta live', icon: Gavel, primary: true },
   { to: '/dashboard', label: 'Dashboard', icon: BarChart3 },
   { to: '/settings', label: 'Impostazioni', icon: SettingsIcon },

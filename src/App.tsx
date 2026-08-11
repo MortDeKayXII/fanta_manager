@@ -8,6 +8,7 @@ import { PrepBoardScreen } from '@/screens/PrepBoardScreen'
 import { SettingsScreen } from '@/screens/SettingsScreen'
 import { SetupScreen } from '@/screens/SetupScreen'
 import { StrategyBuilderScreen } from '@/screens/StrategyBuilderScreen'
+import SimulationDraftScreen from '@/screens/SimulationDraftScreen'
 
 /** The six screens of spec §6. */
 const router = createBrowserRouter(
@@ -20,6 +21,7 @@ const router = createBrowserRouter(
         { path: 'setup', element: <SetupScreen /> },
         { path: 'prep', element: <PrepBoardScreen /> },
         { path: 'strategy', element: <StrategyBuilderScreen /> },
+        { path: 'simulate', element: <SimulationDraftScreen /> },
         { path: 'live', element: <LiveDraftScreen /> },
         { path: 'dashboard', element: <DashboardScreen /> },
         { path: 'settings', element: <SettingsScreen /> },

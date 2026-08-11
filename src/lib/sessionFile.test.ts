@@ -21,6 +21,9 @@ function base(): DraftSession {
     teams: [{ id: 't1', name: 'Mine', budget_total: 500, isMe: true }],
     players: [],
     strategies: [],
+    simulation_state: {},
+    simulation_module_id: '4-4-2',
+    simulation_formation_state: {},
     slot_assignments: {},
     log: [],
   }

@@ -271,6 +271,88 @@ export function clearSlot(
   }
 }
 
+export function assignSimulationSlot(
+  session: DraftSession,
+  { strategyId, slotId, playerId }: { strategyId: string; slotId: string; playerId: string },
+): DraftSession {
+  const current = session.simulation_state[strategyId] ?? {}
+  const next = Object.fromEntries(
+    Object.entries(current).filter(([, id]) => id !== playerId),
+  )
+  next[slotId] = playerId
+
+  return {
+    ...session,
+    simulation_state: { ...session.simulation_state, [strategyId]: next },
+  }
+}
+
+export function clearSimulationSlot(
+  session: DraftSession,
+  { strategyId, slotId }: { strategyId: string; slotId: string },
+): DraftSession {
+  const current = session.simulation_state[strategyId]
+  if (!current || !(slotId in current)) return session
+
+  const next = { ...current }
+  delete next[slotId]
+  return {
+    ...session,
+    simulation_state: { ...session.simulation_state, [strategyId]: next },
+  }
+}
+
+export function setSimulationStrategy(
+  session: DraftSession,
+  strategyId: string | undefined,
+): DraftSession {
+  return { ...session, simulation_strategy_id: strategyId }
+}
+
+export function setSimulationModule(
+  session: DraftSession,
+  moduleId: string | undefined,
+): DraftSession {
+  return { ...session, simulation_module_id: moduleId }
+}
+
+export function assignSimulationFormationPosition(
+  session: DraftSession,
+  { moduleId, positionId, playerId }: { moduleId: string; positionId: string; playerId: string },
+): DraftSession {
+  const current = session.simulation_formation_state[moduleId] ?? {}
+  const next = Object.fromEntries(
+    Object.entries(current).filter(([, id]) => id !== playerId),
+  )
+  next[positionId] = playerId
+
+  return {
+    ...session,
+    simulation_formation_state: {
+      ...session.simulation_formation_state,
+      [moduleId]: next,
+    },
+  }
+}
+
+export function clearSimulationFormationPosition(
+  session: DraftSession,
+  { moduleId, positionId }: { moduleId: string; positionId: string },
+): DraftSession {
+  const current = session.simulation_formation_state[moduleId]
+  if (!current || !(positionId in current)) return session
+
+  const next = { ...current }
+  delete next[positionId]
+  return {
+    ...session,
+    simulation_formation_state: {
+      ...session.simulation_formation_state,
+      [moduleId]: next,
+    },
+  }
+}
+
 // --- Settings, teams, strategies -------------------------------------------
 
 export function updateSettings(
@@ -611,6 +693,11 @@ export function createSession({
     teams,
     players: [],
     strategies: [],
+    active_strategy_id: undefined,
+    simulation_strategy_id: undefined,
+    simulation_state: {},
+    simulation_module_id: '4-4-2',
+    simulation_formation_state: {},
     slot_assignments: {},
     log: [],
   }
