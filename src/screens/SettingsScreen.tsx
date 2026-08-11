@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState } from 'react'
 import {
   AlertTriangle,
   ArrowDown,
@@ -749,6 +749,11 @@ export function SettingsScreen() {
             {savedMsg && (
               <div className="flex items-center pl-2">
                 <span className="text-xs text-(--color-fg-muted)">{savedMsg}</span>
+              </div>
+            )}
+            {gistMsg && (
+              <div className="flex items-center pl-2">
+                <span className="text-xs text-(--color-fg-muted)">{gistMsg}</span>
               </div>
             )}
             <button
