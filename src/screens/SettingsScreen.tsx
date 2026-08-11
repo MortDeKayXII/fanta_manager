@@ -661,11 +661,27 @@ export function SettingsScreen() {
                           },
                         },
                       }
-                      const res = await fetch('https://api.github.com/gists', {
+
+                      let res = await fetch('https://api.github.com/gists', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload),
                       })
+
+                      // If GitHub requires authentication, prompt and retry with token
+                      if (res.status === 401) {
+                        const token = liveTokenInput || window.prompt('Creazione gist richiede autenticazione. Inserisci Personal Access Token con scope `gist` per creare il gist, oppure annulla.')
+                        if (!token) throw new Error('Autenticazione richiesta')
+                        res = await fetch('https://api.github.com/gists', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `token ${token}`,
+                          },
+                          body: JSON.stringify(payload),
+                        })
+                      }
+
                       if (!res.ok) throw new Error(await res.text())
                       const data = await res.json()
                       gistId = data.id
@@ -675,7 +691,14 @@ export function SettingsScreen() {
                       setLiveStatus(`Live gist creato e copiato negli appunti: ${url}`)
                     } else {
                       // Join existing gist: discover files
-                      const res = await fetch(`https://api.github.com/gists/${gistId}`)
+                      let res = await fetch(`https://api.github.com/gists/${gistId}`)
+                      if (res.status === 401) {
+                        const token = liveTokenInput || window.prompt('Accesso al gist richiesto. Inserisci Personal Access Token con scope `gist` per connetterti, oppure annulla.')
+                        if (!token) throw new Error('Autenticazione richiesta')
+                        res = await fetch(`https://api.github.com/gists/${gistId}`, {
+                          headers: { Authorization: `token ${token}` },
+                        })
+                      }
                       if (!res.ok) throw new Error(await res.text())
                       const data = await res.json()
                       fileName = Object.keys(data.files)[0]
