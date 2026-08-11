@@ -1,0 +1,93 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Design tokens. Dark-first: the live-draft screen is used for hours under
+   time pressure, so the palette is low-glare with high-contrast accents.
+
+   Bucket accent colors are NOT defined here — buckets are user-defined
+   (settings.buckets[].color) and reference the `accent-*` scale below by name.
+   --------------------------------------------------------------------------- */
+
+@theme {
+  /* Surfaces */
+  --color-bg: oklch(0.17 0.012 265);
+  --color-surface: oklch(0.21 0.014 265);
+  --color-surface-2: oklch(0.25 0.016 265);
+  --color-surface-3: oklch(0.30 0.018 265);
+  --color-border: oklch(0.33 0.018 265);
+  --color-border-strong: oklch(0.42 0.02 265);
+
+  /* Text */
+  --color-fg: oklch(0.96 0.005 265);
+  --color-fg-muted: oklch(0.73 0.015 265);
+  --color-fg-subtle: oklch(0.58 0.015 265);
+
+  /* Brand */
+  --color-brand: oklch(0.72 0.16 155);
+  --color-brand-strong: oklch(0.64 0.17 155);
+  --color-brand-fg: oklch(0.18 0.03 155);
+
+  /* Flag severities (spec 4.4) */
+  --color-ok: oklch(0.74 0.15 152);
+  --color-ok-bg: oklch(0.30 0.06 152);
+  --color-info: oklch(0.74 0.12 240);
+  --color-info-bg: oklch(0.30 0.05 240);
+  --color-warn: oklch(0.80 0.14 82);
+  --color-warn-bg: oklch(0.32 0.06 82);
+  --color-danger: oklch(0.68 0.19 25);
+  --color-danger-bg: oklch(0.32 0.09 25);
+
+  /* Named accents available to user-defined buckets.
+     These carry identity (which bucket), so they are a categorical palette.
+     Stepped into the dark lightness band (L 0.48–0.67) and validated with the
+     dataviz validator against --color-surface: the five default-preset slots
+     (amber, sky, lime, violet, rose — in that order) pass all checks, worst
+     adjacent CVD ΔE 22.3, normal-vision ΔE 24.6, all ≥ 3:1 on surface.
+     Teal and slate are extra choices for user-created buckets; the full seven
+     do NOT clear an all-pairs check, which is why a bucket swatch is always
+     rendered beside its text label — identity is never color-alone. */
+  --color-accent-amber: oklch(0.66 0.145 75);
+  --color-accent-sky: oklch(0.62 0.15 245);
+  --color-accent-lime: oklch(0.648 0.17 132);
+  --color-accent-violet: oklch(0.58 0.2 300);
+  --color-accent-rose: oklch(0.6 0.19 18);
+  --color-accent-teal: oklch(0.64 0.115 185);
+  --color-accent-slate: oklch(0.6 0.025 265);
+
+  --radius-piece: 0.75rem;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tabular numerals are opt-in via `tabular-nums`, applied to columns of numbers
+   that must align vertically (roster rows, price columns). Deliberately NOT
+   global: equal-width digits make large standalone values (a budget hero number,
+   a stat-tile value) look loose. */
+
+/* Scrollbars: the three columns of the live draft all scroll independently. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
+}
+
+@utility puzzle-nub {
+  /* The tab/nub of a strategy-board puzzle piece (spec 4.2, right column). */
+  position: absolute;
+  top: 50%;
+  right: -0.4rem;
+  width: 0.8rem;
+  height: 0.8rem;
+  translate: 0 -50%;
+  rotate: 45deg;
+  border-radius: 0.15rem;
+}
