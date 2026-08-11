@@ -490,8 +490,16 @@ export function SettingsScreen() {
             </button>
             <button
               onClick={async () => {
-                await saveState()
-                setSavedMsg('Stato salvato come predefinito per nuove sessioni')
+                setSavedMsg('Salvataggio in corso...')
+                try {
+                  await saveState()
+                  setSavedMsg('Stato salvato come predefinito per nuove sessioni')
+                } catch (err) {
+                  // Surface the error so the user sees failure (e.g. private mode)
+                  // eslint-disable-next-line no-console
+                  console.error('saveState failed', err)
+                  setSavedMsg('Errore: impossibile salvare (controlla IndexedDB)')
+                }
                 setTimeout(() => setSavedMsg(null), 3000)
               }}
               className="flex h-9 items-center gap-2 rounded-md border border-(--color-border) px-3 text-sm text-(--color-fg-muted) hover:bg-(--color-surface-2)"
@@ -502,8 +510,15 @@ export function SettingsScreen() {
             {hasSavedState && (
               <button
                 onClick={async () => {
-                  await clearSavedState()
-                  setSavedMsg('Stato predefinito rimosso')
+                  setSavedMsg('Rimozione in corso...')
+                  try {
+                    await clearSavedState()
+                    setSavedMsg('Stato predefinito rimosso')
+                  } catch (err) {
+                    // eslint-disable-next-line no-console
+                    console.error('clearSavedState failed', err)
+                    setSavedMsg('Errore: impossibile rimuovere lo stato')
+                  }
                   setTimeout(() => setSavedMsg(null), 3000)
                 }}
                 className="flex h-9 items-center gap-2 rounded-md border border-(--color-border) px-3 text-sm text-(--color-fg-muted) hover:bg-(--color-surface-2)"
