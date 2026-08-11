@@ -10,21 +10,26 @@ import { SetupScreen } from '@/screens/SetupScreen'
 import { StrategyBuilderScreen } from '@/screens/StrategyBuilderScreen'
 
 /** The six screens of spec §6. */
-const router = createBrowserRouter([
+const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <AppShell />,
+      children: [
+        { index: true, element: <Navigate to="/live" replace /> },
+        { path: 'setup', element: <SetupScreen /> },
+        { path: 'prep', element: <PrepBoardScreen /> },
+        { path: 'strategy', element: <StrategyBuilderScreen /> },
+        { path: 'live', element: <LiveDraftScreen /> },
+        { path: 'dashboard', element: <DashboardScreen /> },
+        { path: 'settings', element: <SettingsScreen /> },
+      ],
+    },
+  ],
   {
-    path: '/',
-    element: <AppShell />,
-    children: [
-      { index: true, element: <Navigate to="/live" replace /> },
-      { path: 'setup', element: <SetupScreen /> },
-      { path: 'prep', element: <PrepBoardScreen /> },
-      { path: 'strategy', element: <StrategyBuilderScreen /> },
-      { path: 'live', element: <LiveDraftScreen /> },
-      { path: 'dashboard', element: <DashboardScreen /> },
-      { path: 'settings', element: <SettingsScreen /> },
-    ],
+    basename: import.meta.env.BASE_URL,
   },
-])
+)
 
 export default function App() {
   return (
