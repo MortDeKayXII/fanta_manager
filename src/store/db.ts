@@ -74,6 +74,27 @@ export async function setActiveSessionId(id: string): Promise<void> {
   await db.meta.put({ key: ACTIVE_KEY, value: id })
 }
 
+const BASE_SESSION_KEY = 'saved_session_template'
+
+export async function saveBaseSession(session: DraftSession): Promise<void> {
+  await db.meta.put({ key: BASE_SESSION_KEY, value: JSON.stringify(session) })
+}
+
+export async function loadBaseSession(): Promise<DraftSession | undefined> {
+  const stored = await db.meta.get(BASE_SESSION_KEY)
+  if (!stored?.value) return undefined
+  try {
+    return normalizeSession(JSON.parse(stored.value))
+  } catch {
+    await db.meta.delete(BASE_SESSION_KEY)
+    return undefined
+  }
+}
+
+export async function clearBaseSession(): Promise<void> {
+  await db.meta.delete(BASE_SESSION_KEY)
+}
+
 /**
  * The session to show on launch: the one last opened, else the most recent, else
  * nothing — the caller decides what to do with an empty database.

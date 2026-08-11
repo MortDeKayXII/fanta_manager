@@ -153,6 +153,11 @@ interface SessionContextValue extends SessionActions {
   playerById: (id: string) => Player | undefined
   availablePlayers: Player[]
 
+  /** Whether a saved base state exists for creating new sessions. */
+  hasSavedState: boolean
+  saveState: () => void
+  clearSavedState: () => void
+
   // Session management
   sessions: DraftSession[]
   newSession: (args?: { name?: string; numTeams?: number; budgetPerTeam?: number }) => void
@@ -173,6 +178,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<DraftSession>(DEMO_SESSION)
   const [sessions, setSessions] = useState<DraftSession[]>([])
   const [loading, setLoading] = useState(true)
+  const [savedSessionTemplate, setSavedSessionTemplate] = useState<DraftSession | undefined>()
 
   /** Pending debounced write, so a rapid burst of edits produces one save. */
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -182,6 +188,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const refreshList = useCallback(async () => {
     setSessions(await db.listSessions())
+  }, [])
+
+  const refreshSavedState = useCallback(async () => {
+    setSavedSessionTemplate(await db.loadBaseSession())
   }, [])
 
   // Initial load. An empty database is seeded with the demo fixtures so the app
@@ -205,6 +215,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           setSession(DEMO_SESSION)
         }
         await refreshList()
+        await refreshSavedState()
       } catch (err) {
         // A blocked or unavailable IndexedDB (private mode, quota) must not take
         // the app down: fall back to in-memory state and say so once.
@@ -217,7 +228,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true
     }
-  }, [refreshList])
+  }, [refreshList, refreshSavedState])
 
   // Debounced persistence of whatever the current session is.
   useEffect(() => {
@@ -364,17 +375,37 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       },
       playerById: (id) => players.find((p) => p.id === id),
       availablePlayers: players.filter((p) => p.status === 'available'),
+      hasSavedState: Boolean(savedSessionTemplate),
+      saveState: () => {
+        void (async () => {
+          await db.saveBaseSession(session)
+          setSavedSessionTemplate(session)
+        })()
+      },
+      clearSavedState: () => {
+        void (async () => {
+          await db.clearBaseSession()
+          setSavedSessionTemplate(undefined)
+        })()
+      },
 
       // --- Session management ---
       sessions,
       newSession: (args) => {
-        const created = actions.createSession({
-          id: uid('s'),
-          name: args?.name?.trim() || 'Nuova sessione',
-          createdAt: now(),
-          numTeams: args?.numTeams,
-          budgetPerTeam: args?.budgetPerTeam,
-        })
+        const created = savedSessionTemplate
+          ? {
+              ...savedSessionTemplate,
+              id: uid('s'),
+              name: args?.name?.trim() || 'Nuova sessione',
+              created_at: now(),
+            }
+          : actions.createSession({
+              id: uid('s'),
+              name: args?.name?.trim() || 'Nuova sessione',
+              createdAt: now(),
+              numTeams: args?.numTeams,
+              budgetPerTeam: args?.budgetPerTeam,
+            })
         void (async () => {
           await db.saveSession(created)
           switchTo(created)

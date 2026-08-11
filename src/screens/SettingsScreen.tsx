@@ -61,6 +61,9 @@ export function SettingsScreen() {
     deleteSession,
     loadDemoData,
     importSession,
+    hasSavedState,
+    saveState,
+    clearSavedState,
   } = useSession()
   const { buckets, tiers, flag_thresholds } = session.settings
 
@@ -485,6 +488,22 @@ export function SettingsScreen() {
               <Database size={14} />
               Carica dati demo
             </button>
+            <button
+              onClick={saveState}
+              className="flex h-9 items-center gap-2 rounded-md border border-(--color-border) px-3 text-sm text-(--color-fg-muted) hover:bg-(--color-surface-2)"
+            >
+              <Database size={14} />
+              Salva stato corrente
+            </button>
+            {hasSavedState && (
+              <button
+                onClick={clearSavedState}
+                className="flex h-9 items-center gap-2 rounded-md border border-(--color-border) px-3 text-sm text-(--color-fg-muted) hover:bg-(--color-surface-2)"
+              >
+                <Trash2 size={14} />
+                Cancella stato salvato
+              </button>
+            )}
             <button
               onClick={exportSession}
               className="flex h-9 items-center gap-2 rounded-md border border-(--color-border) px-3 text-sm text-(--color-fg-muted) hover:bg-(--color-surface-2)"
