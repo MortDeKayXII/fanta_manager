@@ -241,6 +241,12 @@ function PitchOrList({
   if (!pitchView) {
     return (
       <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          <button className="rounded bg-(--color-surface-3) px-3 py-1 text-sm" onClick={() => savePitch(true)}>
+            Usa vista pitch
+          </button>
+        </div>
+
         {module.positions.map((position: any) => {
           const item = formationAssignments.find((it: any) => it.position.id === position.id)!
           const { options, selected } = item
@@ -282,12 +288,6 @@ function PitchOrList({
             </div>
           )
         })}
-
-        <div className="flex items-center gap-3">
-          <button className="rounded bg-(--color-surface-3) px-3 py-1 text-sm" onClick={() => savePitch(true)}>
-            Usa vista pitch
-          </button>
-        </div>
       </div>
     )
   }
@@ -359,12 +359,6 @@ function PitchOrList({
           </div>
         )
       })}
-
-      <div className="absolute bottom-3 left-3 flex items-center gap-2">
-        <button className="rounded bg-(--color-surface-3) px-3 py-1 text-sm" onClick={() => savePitch(false)}>
-          Usa vista elenco
-        </button>
-      </div>
     </div>
   )
 }
@@ -561,7 +555,7 @@ export function SimulationDraftScreen() {
           {!strategy && <p className="mt-4 text-sm">Nessuna strategia definita.</p>}
 
           {strategy && (
-            <div className="mt-4 grid gap-6 xl:grid-cols-[1.05fr_1fr]">
+            <div className="mt-4 space-y-6">
                 <div className="space-y-4">
                 <div className="flex items-center justify-between gap-4">
                   <div>
@@ -588,7 +582,6 @@ export function SimulationDraftScreen() {
                 <table className="w-full table-auto text-sm">
                   <thead>
                     <tr className="text-left text-xs text-(--color-fg-subtle)">
-                      <th className="pb-2">Slot</th>
                       <th className="pb-2">Bucket</th>
                       <th className="pb-2">Max credit</th>
                       <th className="pb-2">Giocatore</th>
@@ -599,7 +592,6 @@ export function SimulationDraftScreen() {
                   <tbody>
                     {result.assignments.map((assignment) => (
                       <tr key={assignment.slot.id} className="align-top border-t border-(--color-border)">
-                        <td className="py-2">{assignment.slot.id}</td>
                         <td className="py-2">{assignment.bucket?.label ?? '—'}</td>
                         <td className="py-2">{assignment.slot.target_price}</td>
                         <td className="py-2">
