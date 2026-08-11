@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import {
   AlertTriangle,
   ArrowDown,
@@ -11,6 +11,7 @@ import {
   Trash2,
   Upload,
   X,
+  Github,
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -68,6 +69,16 @@ export function SettingsScreen() {
   const { buckets, tiers, flag_thresholds } = session.settings
   const [importError, setImportError] = useState<string>()
   const [savedMsg, setSavedMsg] = useState<string | null>(null)
+  const [gistMsg, setGistMsg] = useState<string | null>(null)
+  const [gistLoading, setGistLoading] = useState(false)
+  // Live share state
+  const [liveGistId, setLiveGistId] = useState<string | null>(null)
+  const [liveFileName, setLiveFileName] = useState<string | null>(null)
+  const [liveGistUrlInput, setLiveGistUrlInput] = useState<string>('')
+  const [liveTokenInput, setLiveTokenInput] = useState<string>('')
+  const [liveStatus, setLiveStatus] = useState<string | null>(null)
+  const pollingRef = useRef<number | null>(null)
+  const lastContentRef = useRef<string | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
 
   function exportSession() {
@@ -494,6 +505,35 @@ export function SettingsScreen() {
                 try {
                   await saveState()
                   setSavedMsg('Stato salvato come predefinito per nuove sessioni')
+                  // If live share is active and we have a gist id, attempt to push update
+                  if (liveGistId && liveFileName) {
+                    try {
+                      const token = liveTokenInput || window.prompt('Inserisci Personal Access Token con scope `gist` per aggiornare il gist (annulla per saltare).')
+                      if (token) {
+                        const patchPayload = {
+                          files: {
+                            [liveFileName]: { content: serializeSession(session) },
+                          },
+                        }
+                        const res = await fetch(`https://api.github.com/gists/${liveGistId}`, {
+                          method: 'PATCH',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `token ${token}`,
+                          },
+                          body: JSON.stringify(patchPayload),
+                        })
+                        if (!res.ok) {
+                          // eslint-disable-next-line no-console
+                          console.error('push gist failed', await res.text())
+                        }
+                      }
+                    } catch (err) {
+                      // non-fatal
+                      // eslint-disable-next-line no-console
+                      console.error('live push failed', err)
+                    }
+                  }
                 } catch (err) {
                   // Surface the error so the user sees failure (e.g. private mode)
                   // eslint-disable-next-line no-console
@@ -507,6 +547,185 @@ export function SettingsScreen() {
               <Database size={14} />
               Salva stato corrente
             </button>
+            <button
+              onClick={async () => {
+                setGistMsg('Creazione gist in corso...')
+                setGistLoading(true)
+                try {
+                  const payload = {
+                    description: `Shared session ${session.name}`,
+                    public: true,
+                    files: {
+                      [sessionFileName(session, Date.now())]: {
+                        content: serializeSession(session),
+                      },
+                    },
+                  }
+
+                  // Try unauthenticated first
+                  let res = await fetch('https://api.github.com/gists', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                  })
+
+                  if (res.status !== 201) {
+                    // Prompt for token and retry
+                    const token = window.prompt(
+                      'Creazione gist pubblica fallita. Inserisci Personal Access Token con scope `gist` (orizza) per riprovare, oppure annulla.',
+                    )
+                    if (!token) throw new Error('Token non fornito')
+
+                    res = await fetch('https://api.github.com/gists', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `token ${token}`,
+                      },
+                      body: JSON.stringify(payload),
+                    })
+                  }
+
+                  if (!res.ok) {
+                    const body = await res.text()
+                    throw new Error(`Gist failed: ${res.status} ${body}`)
+                  }
+
+                  const data = await res.json()
+                  const url = data.html_url || data.url
+                  await navigator.clipboard.writeText(url)
+                  setGistMsg(`Gist creato: ${url} (copiato negli appunti)`)
+                } catch (err: any) {
+                  // eslint-disable-next-line no-console
+                  console.error('create gist failed', err)
+                  setGistMsg('Errore: impossibile creare il gist. Usa Esporta per condividere.')
+                } finally {
+                  setGistLoading(false)
+                  setTimeout(() => setGistMsg(null), 8000)
+                }
+              }}
+              disabled={gistLoading}
+              className="flex h-9 items-center gap-2 rounded-md border border-(--color-border) px-3 text-sm text-(--color-fg-muted) hover:bg-(--color-surface-2)"
+            >
+              <Github size={14} />
+              Condividi (Gist)
+            </button>
+            {/* Live share controls: create/join a gist and poll for updates */}
+            <div className="flex items-center gap-2">
+              <input
+                value={liveGistUrlInput}
+                onChange={(e) => setLiveGistUrlInput(e.target.value)}
+                placeholder="Gist URL o ID (lascia vuoto per crearne uno)"
+                className="h-9 rounded-md border border-(--color-border) bg-(--color-surface-2) px-2 text-sm"
+              />
+              <input
+                value={liveTokenInput}
+                onChange={(e) => setLiveTokenInput(e.target.value)}
+                placeholder="Token (opzionale, necessario per push)"
+                type="password"
+                className="h-9 rounded-md border border-(--color-border) bg-(--color-surface-2) px-2 text-sm"
+              />
+              <button
+                onClick={async () => {
+                  // Start or join live share
+                  if (pollingRef.current) {
+                    // Stop
+                    window.clearInterval(pollingRef.current)
+                    pollingRef.current = null
+                    setLiveGistId(null)
+                    setLiveFileName(null)
+                    setLiveStatus('Live share fermato')
+                    setTimeout(() => setLiveStatus(null), 3000)
+                    return
+                  }
+
+                  setLiveStatus('Avvio live share...')
+                  try {
+                    let gistId: string | null = null
+                    let fileName: string | null = null
+
+                    if (liveGistUrlInput) {
+                      // Extract id from input
+                      const m = liveGistUrlInput.match(/([0-9a-f]{20,})$/i)
+                      gistId = m ? m[1] : liveGistUrlInput
+                    }
+
+                    if (!gistId) {
+                      // Create a new gist to be used for live sharing
+                      const payload = {
+                        description: `Live shared session ${session.name}`,
+                        public: true,
+                        files: {
+                          [sessionFileName(session, Date.now())]: {
+                            content: serializeSession(session),
+                          },
+                        },
+                      }
+                      const res = await fetch('https://api.github.com/gists', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                      })
+                      if (!res.ok) throw new Error(await res.text())
+                      const data = await res.json()
+                      gistId = data.id
+                      fileName = Object.keys(data.files)[0]
+                      const url = data.html_url || data.url
+                      await navigator.clipboard.writeText(url)
+                      setLiveStatus(`Live gist creato e copiato negli appunti: ${url}`)
+                    } else {
+                      // Join existing gist: discover files
+                      const res = await fetch(`https://api.github.com/gists/${gistId}`)
+                      if (!res.ok) throw new Error(await res.text())
+                      const data = await res.json()
+                      fileName = Object.keys(data.files)[0]
+                      setLiveStatus(`Connesso a gist: ${gistId}`)
+                    }
+
+                    setLiveGistId(gistId)
+                    setLiveFileName(fileName)
+
+                    // Start polling
+                    lastContentRef.current = null
+                    pollingRef.current = window.setInterval(async () => {
+                      try {
+                        const res = await fetch(`https://api.github.com/gists/${gistId}`)
+                        if (!res.ok) return
+                        const data = await res.json()
+                        const f = data.files[fileName]
+                        if (!f) return
+                        const content = f.content
+                        if (content && content !== lastContentRef.current) {
+                          lastContentRef.current = content
+                          const { session: parsed, error } = parseSessionFile(content)
+                          if (parsed && !error) {
+                            importSession(parsed)
+                            setLiveStatus('Sessione aggiornata dal gist')
+                            setTimeout(() => setLiveStatus(null), 2000)
+                          }
+                        }
+                      } catch (err) {
+                        // eslint-disable-next-line no-console
+                        console.error('poll gist failed', err)
+                      }
+                    }, 5000)
+                  } catch (err: any) {
+                    // eslint-disable-next-line no-console
+                    console.error('start live share failed', err)
+                    setLiveStatus('Errore: impossibile avviare il live share')
+                    setTimeout(() => setLiveStatus(null), 4000)
+                  }
+                }}
+                className="flex h-9 items-center gap-2 rounded-md border border-(--color-border) px-3 text-sm text-(--color-fg-muted) hover:bg-(--color-surface-2)"
+              >
+                {pollingRef.current ? 'Stop Live' : 'Start Live Share'}
+              </button>
+            </div>
+            {liveStatus && (
+              <div className="flex items-center pl-2">
+                <span className="text-xs text-(--color-fg-muted)">{liveStatus}</span>
+              </div>
+            )}
             {hasSavedState && (
               <button
                 onClick={async () => {
