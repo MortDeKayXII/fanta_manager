@@ -66,8 +66,8 @@ export function SettingsScreen() {
     clearSavedState,
   } = useSession()
   const { buckets, tiers, flag_thresholds } = session.settings
-
   const [importError, setImportError] = useState<string>()
+  const [savedMsg, setSavedMsg] = useState<string | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
 
   function exportSession() {
@@ -480,7 +480,7 @@ export function SettingsScreen() {
               ))}
           </div>
 
-          <div className="mt-2 flex flex-wrap gap-2">
+            <div className="mt-2 flex flex-wrap gap-2">
             <button
               onClick={loadDemoData}
               className="flex h-9 items-center gap-2 rounded-md border border-(--color-border) px-3 text-sm text-(--color-fg-muted) hover:bg-(--color-surface-2)"
@@ -489,7 +489,11 @@ export function SettingsScreen() {
               Carica dati demo
             </button>
             <button
-              onClick={saveState}
+              onClick={async () => {
+                await saveState()
+                setSavedMsg('Stato salvato come predefinito per nuove sessioni')
+                setTimeout(() => setSavedMsg(null), 3000)
+              }}
               className="flex h-9 items-center gap-2 rounded-md border border-(--color-border) px-3 text-sm text-(--color-fg-muted) hover:bg-(--color-surface-2)"
             >
               <Database size={14} />
@@ -497,12 +501,21 @@ export function SettingsScreen() {
             </button>
             {hasSavedState && (
               <button
-                onClick={clearSavedState}
+                onClick={async () => {
+                  await clearSavedState()
+                  setSavedMsg('Stato predefinito rimosso')
+                  setTimeout(() => setSavedMsg(null), 3000)
+                }}
                 className="flex h-9 items-center gap-2 rounded-md border border-(--color-border) px-3 text-sm text-(--color-fg-muted) hover:bg-(--color-surface-2)"
               >
                 <Trash2 size={14} />
                 Cancella stato salvato
               </button>
+            )}
+            {savedMsg && (
+              <div className="flex items-center pl-2">
+                <span className="text-xs text-(--color-fg-muted)">{savedMsg}</span>
+              </div>
             )}
             <button
               onClick={exportSession}

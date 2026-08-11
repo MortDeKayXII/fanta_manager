@@ -155,8 +155,8 @@ interface SessionContextValue extends SessionActions {
 
   /** Whether a saved base state exists for creating new sessions. */
   hasSavedState: boolean
-  saveState: () => void
-  clearSavedState: () => void
+  saveState: () => Promise<void>
+  clearSavedState: () => Promise<void>
 
   // Session management
   sessions: DraftSession[]
@@ -376,17 +376,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       playerById: (id) => players.find((p) => p.id === id),
       availablePlayers: players.filter((p) => p.status === 'available'),
       hasSavedState: Boolean(savedSessionTemplate),
-      saveState: () => {
-        void (async () => {
-          await db.saveBaseSession(session)
-          setSavedSessionTemplate(session)
-        })()
+      saveState: async () => {
+        await db.saveBaseSession(session)
+        setSavedSessionTemplate(session)
       },
-      clearSavedState: () => {
-        void (async () => {
-          await db.clearBaseSession()
-          setSavedSessionTemplate(undefined)
-        })()
+      clearSavedState: async () => {
+        await db.clearBaseSession()
+        setSavedSessionTemplate(undefined)
       },
 
       // --- Session management ---
