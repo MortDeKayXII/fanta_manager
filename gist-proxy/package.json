@@ -1,0 +1,18 @@
+{
+	"name": "gist-proxy",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "npx wrangler deploy",
+		"dev": "npx wrangler dev",
+		"start": "npx wrangler dev",
+		"test": "vitest",
+		"cf-typegen": "npx wrangler types"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.12.4",
+		"typescript": "^5.5.2",
+		"vitest": "~3.2.0",
+		"wrangler": "^3.101.0"
+	}
+}
