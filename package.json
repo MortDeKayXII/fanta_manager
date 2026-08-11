@@ -2,6 +2,7 @@
   "name": "fantadraft-assistant",
   "private": true,
   "version": "0.1.0",
+  "homepage": "https://mortdekayxii.github.io/fanta_manager/",
   "type": "module",
   "scripts": {
     "dev": "vite",
