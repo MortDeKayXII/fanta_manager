@@ -1,15 +1,15 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { ArrowDown, ArrowUp, Ban, Search, Target } from 'lucide-react'
 import clsx from 'clsx'
 
 import { ClubBadge, RoleBadges } from '@/components/badges'
+import {MANTRA_ROLES} from '@/types'
+import type {MantraRole} from '@/types'
 import { EmptyState } from '@/components/meters'
 import { bucketsForPlayer } from '@/lib/buckets'
 import { tierRank } from '@/lib/tiers'
 import { useSession } from '@/store/session'
-import type { Player } from '@/types'
-
-type SortKey = 'name' | 'real_team' | 'avg_price' | 'tier'
+import type { Player, PrepFilters, PrepSortKey } from '@/types'
 
 /**
  * Prep board (spec §4.1 / §6.2): sortable, filterable player table with tagging,
@@ -22,19 +22,19 @@ type SortKey = 'name' | 'real_team' | 'avg_price' | 'tier'
  * rather than assuming TIT/PAN/SCO.
  */
 export function PrepBoardScreen() {
-  const { session } = useSession()
+  const { session, updatePrepFilters } = useSession()
   const { buckets, tiers } = session.settings
 
-  const [query, setQuery] = useState('')
-  const [bucketId, setBucketId] = useState('')
-  const [club, setClub] = useState('')
-  const [tier, setTier] = useState('')
-  const [tag, setTag] = useState('')
-  const [onlyAvailable, setOnlyAvailable] = useState(false)
-  const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' }>({
-    key: 'avg_price',
-    dir: 'desc',
-  })
+  const {
+  query,
+  bucketId,
+  club,
+  role,
+  tier,
+  tag,
+  onlyAvailable,
+  sort,
+  } = session.prep_filters
 
   const clubs = useMemo(
     () => [...new Set(session.players.map((p) => p.real_team))].sort(),
@@ -50,8 +50,8 @@ export function PrepBoardScreen() {
       if (tier && p.tier !== tier) return false
       if (tag && p.personal_tag !== tag) return false
       if (onlyAvailable && p.status !== 'available') return false
-      if (bucketId && !bucketsForPlayer(buckets, p).some((b) => b.id === bucketId))
-        return false
+      if (bucketId && !bucketsForPlayer(buckets, p).some((b) => b.id === bucketId)) return false
+      if (role && MANTRA_ROLES.includes(role as MantraRole) && !p.roles.includes(role as MantraRole)) return false
       return true
     })
 
@@ -68,15 +68,25 @@ export function PrepBoardScreen() {
           return a.name.localeCompare(b.name) * dir
       }
     })
-  }, [session.players, query, club, tier, tag, onlyAvailable, bucketId, buckets, tiers, sort])
+  }, [session.players, query, club, tier, tag, onlyAvailable, bucketId, buckets, tiers, sort, role])
 
-  function toggleSort(key: SortKey) {
-    setSort((s) =>
-      s.key === key
-        ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' }
-        : { key, dir: key === 'name' || key === 'real_team' ? 'asc' : 'desc' },
-    )
-  }
+  function toggleSort(key: PrepSortKey) {
+  const dir: PrepFilters['sort']['dir'] =
+    sort.key === key
+      ? sort.dir === 'asc'
+        ? 'desc'
+        : 'asc'
+      : key === 'name' || key === 'real_team'
+        ? 'asc'
+        : 'desc'
+
+  updatePrepFilters({
+    sort: {
+      key,
+      dir,
+    },
+  })
+}
 
   const selectCls =
     'h-8 rounded-md border border-(--color-border) bg-(--color-surface-2) px-2 text-xs'
@@ -92,7 +102,7 @@ export function PrepBoardScreen() {
           />
           <input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => updatePrepFilters({ query: e.target.value })}
             placeholder="Cerca…"
             className="h-8 w-56 rounded-md border border-(--color-border) bg-(--color-surface-2) pl-8 text-xs placeholder:text-(--color-fg-subtle)"
           />
@@ -100,7 +110,7 @@ export function PrepBoardScreen() {
 
         <select
           value={bucketId}
-          onChange={(e) => setBucketId(e.target.value)}
+          onChange={(e) => updatePrepFilters({bucketId: e.target.value})}
           className={selectCls}
         >
           <option value="">Tutti i reparti</option>
@@ -112,8 +122,19 @@ export function PrepBoardScreen() {
         </select>
 
         <select
+        value = {role}
+        onChange={(e) => updatePrepFilters({role: e.target.value as PrepFilters['role']})}
+        className={selectCls}
+        >
+          <option value=""> Tutti i ruoli</option>
+          {MANTRA_ROLES.map((b) => (
+            <option key={b} value={b}> {b} </option>
+          ))}
+        </select>
+
+        <select
           value={club}
-          onChange={(e) => setClub(e.target.value)}
+          onChange={(e) => updatePrepFilters({club: e.target.value})}
           className={selectCls}
         >
           <option value="">Tutte le squadre</option>
@@ -126,7 +147,7 @@ export function PrepBoardScreen() {
 
         <select
           value={tier}
-          onChange={(e) => setTier(e.target.value)}
+          onChange={(e) => updatePrepFilters({tier: e.target.value})}
           className={selectCls}
         >
           <option value="">Tutte le fasce</option>
@@ -139,7 +160,7 @@ export function PrepBoardScreen() {
 
         <select
           value={tag}
-          onChange={(e) => setTag(e.target.value)}
+          onChange={(e) => updatePrepFilters({tag: e.target.value as PrepFilters['tag']})}
           className={selectCls}
         >
           <option value="">Tutti i tag</option>
@@ -151,7 +172,7 @@ export function PrepBoardScreen() {
           <input
             type="checkbox"
             checked={onlyAvailable}
-            onChange={(e) => setOnlyAvailable(e.target.checked)}
+            onChange={(e) => updatePrepFilters({onlyAvailable: e.target.checked})}
             className="accent-(--color-brand)"
           />
           Solo disponibili
@@ -218,8 +239,8 @@ function Th({
 }: {
   children: React.ReactNode
   onClick: () => void
-  sort: { key: SortKey; dir: 'asc' | 'desc' }
-  k: SortKey
+  sort: { key: PrepSortKey; dir: 'asc' | 'desc' }
+  k: PrepSortKey
   align?: 'left' | 'right'
 }) {
   const active = sort.key === k

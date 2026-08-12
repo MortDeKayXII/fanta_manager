@@ -7,6 +7,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { defaultBuckets } from '@/lib/buckets'
+import {defaultPrepFilters} from '@/lib/prep'
 import { computeFlags } from '@/lib/flags'
 import { defaultTiers } from '@/lib/tiers'
 import { assignSlot } from '@/store/actions'
@@ -54,6 +55,7 @@ function base(over: Partial<DraftSession> = {}): DraftSession {
     simulation_formation_state: {},
     slot_assignments: {},
     log: [],
+    prep_filters: defaultPrepFilters(),
     ...over,
   }
 }

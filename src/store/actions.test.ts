@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest'
 
 import * as a from '@/store/actions'
 import { defaultBuckets } from '@/lib/buckets'
+import { defaultPrepFilters} from '@/lib/prep'
 import { defaultTiers } from '@/lib/tiers'
 import type { DraftSession, Player } from '@/types'
 
@@ -60,6 +61,7 @@ function base(): DraftSession {
     simulation_formation_state: {},
     slot_assignments: {},
     log: [],
+    prep_filters: defaultPrepFilters(),
   }
 }
 

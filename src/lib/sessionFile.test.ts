@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { defaultBuckets } from '@/lib/buckets'
+import {defaultPrepFilters} from '@/lib/prep'
 import { parseSessionFile, serializeSession, sessionFileName } from '@/lib/sessionFile'
 import { defaultTiers } from '@/lib/tiers'
 import type { DraftSession } from '@/types'
@@ -26,6 +27,7 @@ function base(): DraftSession {
     simulation_formation_state: {},
     slot_assignments: {},
     log: [],
+    prep_filters: defaultPrepFilters(),
   }
 }
 

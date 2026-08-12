@@ -203,7 +203,9 @@ export interface DraftSession {
   teams: Team[]
   players: Player[]
   strategies: Strategy[]
-  /** Currently selected strategy on the live-draft board. */
+
+  prep_filters: PrepFilters
+
   active_strategy_id?: string
   slot_assignments: SlotAssignments
   simulation_state: SimulationState
@@ -229,4 +231,21 @@ export interface Flag {
   kind: FlagKind
   severity: FlagSeverity
   message: string
+}
+
+
+export type PrepSortKey = 'name' | 'real_team' | 'avg_price' | 'tier'
+
+export interface PrepFilters {
+  query: string
+  bucketId: string
+  club: string
+  role: MantraRole | ''
+  tier: string
+  tag: PersonalTag | ''
+  onlyAvailable: boolean
+  sort: {
+    key: PrepSortKey
+    dir: 'asc' | 'desc'
+  }
 }

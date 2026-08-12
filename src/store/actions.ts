@@ -16,10 +16,12 @@
 
 import { defaultBuckets } from '@/lib/buckets'
 import { defaultTiers } from '@/lib/tiers'
+import {defaultPrepFilters} from '@/lib/prep'
 import type {
   DraftSession,
   MantraRole,
   Player,
+  PrepFilters,
   RoleBucket,
   Settings,
   Strategy,
@@ -700,6 +702,7 @@ export function createSession({
     simulation_formation_state: {},
     slot_assignments: {},
     log: [],
+    prep_filters: defaultPrepFilters(),
   }
 }
 
@@ -739,5 +742,24 @@ export function makePlayer({
     avg_price: avgPrice,
     tier,
     status: 'available',
+  }
+}
+
+export function updatePrepFilters(
+  session: DraftSession,
+  patch: Partial<Omit<PrepFilters, 'sort'>> & {
+    sort?: Partial<PrepFilters['sort']>
+  },
+): DraftSession {
+  return {
+    ...session,
+    prep_filters: {
+      ...session.prep_filters,
+      ...patch,
+      sort: {
+        ...session.prep_filters.sort,
+        ...patch.sort,
+      },
+    },
   }
 }

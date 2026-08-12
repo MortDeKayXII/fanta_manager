@@ -11,6 +11,7 @@
  */
 
 import { defaultBuckets, totalQuota } from '@/lib/buckets'
+import {defaultPrepFilters} from '@/lib/prep'
 import { defaultTiers } from '@/lib/tiers'
 import type {
   DraftLogEntry,
@@ -318,6 +319,7 @@ export const DEMO_SESSION: DraftSession = {
   simulation_strategy_id: 's1',
   slot_assignments: DEMO_SLOT_ASSIGNMENTS,
   log: buildLog(DEMO_PLAYERS),
+  prep_filters: defaultPrepFilters(),
 }
 
 /** Sanity check that the fixture squad size matches the configured quotas. */

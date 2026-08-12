@@ -13,7 +13,7 @@
 import Dexie, { type EntityTable } from 'dexie'
 
 import { defaultTiers } from '@/lib/tiers'
-import type { DraftSession } from '@/types'
+import type { DraftSession, PrepFilters } from '@/types'
 
 /** Which session to reopen on launch — Dexie's key/value side table. */
 interface Meta {
@@ -24,6 +24,20 @@ interface Meta {
 const db = new Dexie('fantadraft') as Dexie & {
   sessions: EntityTable<DraftSession, 'id'>
   meta: EntityTable<Meta, 'key'>
+}
+
+const DEFAULT_PREP_FILTERS: PrepFilters = {
+  query: '',
+  bucketId: '',
+  club: '',
+  role: '',
+  tier: '',
+  tag: '',
+  onlyAvailable: false,
+  sort: {
+    key: 'avg_price',
+    dir: 'desc',
+  },
 }
 
 db.version(1).stores({
@@ -56,6 +70,16 @@ function normalizeSession(session: DraftSession): DraftSession {
   if (!normalized.simulation_formation_state) {
     normalized = { ...normalized, simulation_formation_state: {} }
   }
+
+  if (!normalized.prep_filters) {
+  normalized = {
+    ...normalized,
+    prep_filters: {
+      ...DEFAULT_PREP_FILTERS,
+      sort: { ...DEFAULT_PREP_FILTERS.sort },
+    },
+  }
+}
 
   return normalized
 }

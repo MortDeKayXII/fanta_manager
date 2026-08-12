@@ -38,6 +38,7 @@ import {
   type Strategy,
   type Team,
   type TierDef,
+  type PrepFilters,
 } from '@/types'
 
 /** Long enough to coalesce a burst of keystrokes, short enough to survive a crash. */
@@ -110,6 +111,12 @@ interface SessionActions {
   toggleBucketRole: (bucketId: string, role: MantraRole) => void
   removeBucket: (bucketId: string) => void
   addBucket: () => void
+
+  updatePrepFilters: (
+  patch: Partial<Omit<PrepFilters, 'sort'>> & {
+    sort?: Partial<PrepFilters['sort']>
+  },
+) => void
 
   setTiers: (tiers: TierDef[]) => void
   /** Prefer this over setTiers for the same reason as patchBucket. */
@@ -341,6 +348,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setSimulationModule: act(actions.setSimulationModule),
 
       updateSettings: act(actions.updateSettings),
+      updatePrepFilters: act(actions.updatePrepFilters),
       setBuckets: act(actions.setBuckets),
       patchBucket: act(actions.patchBucket),
       toggleBucketRole: act(actions.toggleBucketRole),
