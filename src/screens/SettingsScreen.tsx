@@ -3,15 +3,12 @@ import {
   AlertTriangle,
   ArrowDown,
   ArrowUp,
-  Database,
   Download,
   Info,
   Plus,
   RotateCcw,
-  Trash2,
   Upload,
   X,
-  Github,
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -47,7 +44,6 @@ import {
 export function SettingsScreen() {
   const {
     session,
-    sessions,
     setBuckets,
     patchBucket,
     toggleBucketRole,
@@ -61,21 +57,12 @@ export function SettingsScreen() {
     updateSettings,
     updateTeam,
     setNumTeams,
-    renameSession,
-    newSession,
-    switchSession,
-    deleteSession,
-    loadDemoData,
     importSession,
-    hasSavedState,
     saveState,
-    clearSavedState,
   } = useSession()
   const { buckets, tiers, flag_thresholds } = session.settings
   const [importError, setImportError] = useState<string>()
   const [savedMsg, setSavedMsg] = useState<string | null>(null)
-  const [gistMsg, setGistMsg] = useState<string | null>(null)
-  const [gistLoading, setGistLoading] = useState(false)
   // Manual Gist synchronization state.
   // There is intentionally NO polling and NO automatic import.
   const [gistId, setGistId] = useState<string | null>(null)
